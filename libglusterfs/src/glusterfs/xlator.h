@@ -182,6 +182,10 @@ typedef int32_t (*fop_open_cbk_t)(call_frame_t *frame, void *cookie,
                                   xlator_t *this, int32_t op_ret,
                                   int32_t op_errno, fd_t *fd, dict_t *xdata);
 
+typedef int32_t (*fop_test_cbk_t)(call_frame_t *frame, void *cookie,
+                                  xlator_t *this, int32_t op_ret,
+                                  int32_t op_errno, fd_t *fd, dict_t *xdata);
+
 typedef int32_t (*fop_readv_cbk_t)(call_frame_t *frame, void *cookie,
                                    xlator_t *this, int32_t op_ret,
                                    int32_t op_errno, struct iovec *vector,
@@ -420,6 +424,9 @@ typedef int32_t (*fop_create_t)(call_frame_t *frame, xlator_t *this, loc_t *loc,
 typedef int32_t (*fop_open_t)(call_frame_t *frame, xlator_t *this, loc_t *loc,
                               int32_t flags, fd_t *fd, dict_t *xdata);
 
+typedef int32_t (*fop_test_t)(call_frame_t *frame, xlator_t *this, loc_t *loc,
+                              int32_t flags, fd_t *fd, dict_t *xdata);
+
 typedef int32_t (*fop_readv_t)(call_frame_t *frame, xlator_t *this, fd_t *fd,
                                size_t size, off_t offset, uint32_t flags,
                                dict_t *xdata);
@@ -571,6 +578,7 @@ struct xlator_fops {
     fop_link_t link;
     fop_truncate_t truncate;
     fop_open_t open;
+    fop_test_t test;
     fop_readv_t readv;
     fop_writev_t writev;
     fop_statfs_t statfs;
@@ -636,6 +644,7 @@ struct xlator_fops {
     fop_link_cbk_t link_cbk;
     fop_truncate_cbk_t truncate_cbk;
     fop_open_cbk_t open_cbk;
+    fop_test_cbk_t test_cbk;
     fop_readv_cbk_t readv_cbk;
     fop_writev_cbk_t writev_cbk;
     fop_statfs_cbk_t statfs_cbk;

@@ -295,6 +295,20 @@ struct   gfx_open_rsp {
         quad_t fd;
 };
 
+ struct   gfx_test_req {
+        opaque gfid[16];
+        unsigned int flags;
+        gfx_dict xdata; /* Extra data */
+};
+
+struct   gfx_test_rsp {
+        int    op_ret;
+        int    op_errno;
+        gfx_dict xdata; /* Extra data */
+        quad_t fd;
+};
+
+
 struct gfx_opendir_req {
         opaque gfid[16];
         gfx_dict xdata; /* Extra data */
@@ -831,6 +845,7 @@ union compound_req_v2 switch (glusterfs_fop_t fop_enum) {
         case GF_FOP_IPC:          gfx_ipc_req compound_ipc_req;
         case GF_FOP_SEEK:         gfx_seek_req compound_seek_req;
         case GF_FOP_LEASE:         gfx_lease_req compound_lease_req;
+	case GF_FOP_TEST:         gfx_test_req compound_test_req;
         default:                  void;
 };
 
@@ -891,6 +906,7 @@ union compound_rsp_v2 switch (glusterfs_fop_t fop_enum) {
         case GF_FOP_IPC:          gfx_common_rsp compound_ipc_rsp;
         case GF_FOP_SEEK:         gfx_seek_rsp compound_seek_rsp;
         case GF_FOP_LEASE:        gfx_lease_rsp compound_lease_rsp;
+        case GF_FOP_TEST:         gfx_test_rsp compound_test_rsp;
         default:                  void;
 };
 

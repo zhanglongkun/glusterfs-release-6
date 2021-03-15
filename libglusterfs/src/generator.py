@@ -176,6 +176,17 @@ ops['open'] = (
 	('cbk-arg',	'xdata',		'dict_t *'),
 )
 
+
+ops['test'] = (
+    ('fop-arg', 'loc',          'loc_t *'),
+    ('fop-arg', 'flags',        'int32_t'),
+    ('fop-arg', 'fd',           'fd_t *'),
+    ('fop-arg', 'xdata',        'dict_t *'),
+    ('cbk-arg', 'fd',           'fd_t *'),
+    ('cbk-arg', 'xdata',        'dict_t *'),
+)
+
+
 ops['create'] = (
 	('fop-arg',	'loc',			'loc_t *',			'loc'),
 	('fop-arg',	'flags',		'int32_t',			'flags'),

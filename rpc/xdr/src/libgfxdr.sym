@@ -277,6 +277,8 @@ xdr_gfx_link_req
 xdr_gfx_truncate_req
 xdr_gfx_open_req
 xdr_gfx_open_rsp
+xdr_gfx_test_req
+xdr_gfx_test_rsp
 xdr_gfx_opendir_req
 xdr_gfx_read_req
 xdr_gfx_read_rsp

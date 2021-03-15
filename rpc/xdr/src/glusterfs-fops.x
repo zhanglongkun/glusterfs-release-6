@@ -78,6 +78,7 @@ enum glusterfs_fop_t {
         GF_FOP_ICREATE,
         GF_FOP_NAMELINK,
         GF_FOP_COPY_FILE_RANGE,
+	GF_FOP_TEST,
         GF_FOP_MAXVALUE
 };
 

@@ -193,6 +193,10 @@ default_open(call_frame_t *frame, xlator_t *this, loc_t *loc, int32_t flags,
              fd_t *fd, dict_t *xdata);
 
 int32_t
+default_test(call_frame_t *frame, xlator_t *this, loc_t *loc, int32_t flags,
+             fd_t *fd, dict_t *xdata);
+
+int32_t
 default_readv(call_frame_t *frame, xlator_t *this, fd_t *fd, size_t size,
               off_t offset, uint32_t flags, dict_t *xdata);
 
@@ -412,6 +416,10 @@ default_create_resume(call_frame_t *frame, xlator_t *this, loc_t *loc,
 
 int32_t
 default_open_resume(call_frame_t *frame, xlator_t *this, loc_t *loc,
+                    int32_t flags, fd_t *fd, dict_t *xdata);
+
+int32_t
+default_test_resume(call_frame_t *frame, xlator_t *this, loc_t *loc,
                     int32_t flags, fd_t *fd, dict_t *xdata);
 
 int32_t
@@ -648,6 +656,11 @@ default_create_cbk_resume(call_frame_t *frame, void *cookie, xlator_t *this,
 
 int32_t
 default_open_cbk_resume(call_frame_t *frame, void *cookie, xlator_t *this,
+                        int32_t op_ret, int32_t op_errno, fd_t *fd,
+                        dict_t *xdata);
+
+int32_t
+default_test_cbk_resume(call_frame_t *frame, void *cookie, xlator_t *this,
                         int32_t op_ret, int32_t op_errno, fd_t *fd,
                         dict_t *xdata);
 
@@ -920,6 +933,9 @@ default_create_cbk(call_frame_t *frame, void *cookie, xlator_t *this,
 int32_t
 default_open_cbk(call_frame_t *frame, void *cookie, xlator_t *this,
                  int32_t op_ret, int32_t op_errno, fd_t *fd, dict_t *xdata);
+int32_t
+default_test_cbk(call_frame_t *frame, void *cookie, xlator_t *this,
+                 int32_t op_ret, int32_t op_errno, fd_t *fd, dict_t *xdata);
 
 int32_t
 default_readv_cbk(call_frame_t *frame, void *cookie, xlator_t *this,
@@ -1148,6 +1164,9 @@ default_create_failure_cbk(call_frame_t *frame, int32_t op_errno);
 
 int32_t
 default_open_failure_cbk(call_frame_t *frame, int32_t op_errno);
+
+int32_t
+default_test_failure_cbk(call_frame_t *frame, int32_t op_errno);
 
 int32_t
 default_readv_failure_cbk(call_frame_t *frame, int32_t op_errno);

@@ -6299,6 +6299,138 @@ unwind:
     return 0;
 }
 
+int
+client4_0_test_cbk(struct rpc_req *req, struct iovec *iov, int count,
+                   void *myframe)
+{
+    clnt_local_t *local = NULL;
+    call_frame_t *frame = NULL;
+    fd_t *fd = NULL;
+    int ret = 0;
+    gfx_open_rsp rsp = {
+        0,
+    };
+    xlator_t *this = NULL;
+    dict_t *xdata = NULL;
+
+    this = THIS;
+
+    frame = myframe;
+    local = frame->local;
+
+    fd = local->fd;
+
+    if (-1 == req->rpc_status) {
+        rsp.op_ret = -1;
+        rsp.op_errno = ENOTCONN;
+        goto out;
+    }
+    ret = xdr_to_generic(*iov, &rsp, (xdrproc_t)xdr_gfx_test_rsp);
+    if (ret < 0) {
+        gf_msg(this->name, GF_LOG_ERROR, EINVAL, PC_MSG_XDR_DECODING_FAILED,
+               "XDR decoding failed");
+        rsp.op_ret = -1;
+        rsp.op_errno = EINVAL;
+        goto out;
+    }
+
+#if 0
+    if (-1 != rsp.op_ret) {
+        ret = client_add_fd_to_saved_fds(frame->this, fd, &local->loc,
+                                         local->flags, rsp.fd, 0);
+        if (ret) {
+            rsp.op_ret = -1;
+            rsp.op_errno = -ret;
+            goto out;
+        }
+    }
+#endif
+
+    gf_msg(this->name, GF_LOG_ERROR, gf_error_to_errno(rsp.op_errno), PC_MSG_REMOTE_OP_FAILED,
+           "111111111111");
+
+    ret = xdr_to_dict(&rsp.xdata, &xdata);
+out:
+    if (rsp.op_ret == -1) {
+        gf_msg(this->name,
+               fop_log_level(GF_FOP_TEST, gf_error_to_errno(rsp.op_errno)),
+               gf_error_to_errno(rsp.op_errno), PC_MSG_REMOTE_OP_FAILED,
+               "remote operation failed. Path: %s (%s)", local->loc.path,
+               loc_gfid_utoa(&local->loc));
+    }
+
+    CLIENT_STACK_UNWIND(test, frame, rsp.op_ret,
+                        gf_error_to_errno(rsp.op_errno), fd, xdata);
+
+    if (xdata)
+        dict_unref(xdata);
+
+    return 0;
+}
+
+int32_t
+client4_0_test(call_frame_t *frame, xlator_t *this, void *data)
+{
+    clnt_local_t *local = NULL;
+    clnt_conf_t *conf = NULL;
+    clnt_args_t *args = NULL;
+    gfx_open_req req = {
+        {
+            0,
+        },
+    };
+    int ret = 0;
+    int op_errno = ESTALE;
+
+    if (!frame || !this || !data)
+        goto unwind;
+
+    args = data;
+
+    conf = this->private;
+
+    local = mem_get0(this->local_pool);
+    if (!local) {
+        op_errno = ENOMEM;
+        goto unwind;
+    }
+    frame->local = local;
+
+    local->flags = args->flags;
+
+    local->fd = fd_ref(args->fd);
+    loc_copy(&local->loc, args->loc);
+    loc_path(&local->loc, NULL);
+
+#if 0
+    ret = client_pre_open_v2(this, &req, args->loc, args->fd, args->flags,
+                             args->xdata);
+#endif
+
+    if (ret) {
+        op_errno = -ret;
+        goto unwind;
+    }
+    ret = client_submit_request(this, &req, frame, conf->fops, GFS3_OP_TEST,
+                                client4_0_test_cbk, NULL,
+                                (xdrproc_t)xdr_gfx_test_req);
+    if (ret) {
+        gf_msg(this->name, GF_LOG_WARNING, 0, PC_MSG_FOP_SEND_FAILED,
+               "failed to send the fop");
+    }
+
+    GF_FREE(req.xdata.pairs.pairs_val);
+
+    return 0;
+unwind:
+    CLIENT_STACK_UNWIND(test, frame, -1, op_errno, NULL, NULL);
+
+    GF_FREE(req.xdata.pairs.pairs_val);
+
+    return 0;
+}
+
+
 /* Used From RPC-CLNT library to log proper name of procedure based on number */
 char *clnt4_0_fop_names[GFS3_OP_MAXVALUE] = {
     [GFS3_OP_NULL] = "NULL",
@@ -6356,6 +6488,7 @@ char *clnt4_0_fop_names[GFS3_OP_MAXVALUE] = {
     [GFS3_OP_COMPOUND] = "COMPOUND",
     [GFS3_OP_ICREATE] = "ICREATE",
     [GFS3_OP_NAMELINK] = "NAMELINK",
+    [GFS3_OP_TEST] = "TEST",
 };
 
 rpc_clnt_procedure_t clnt4_0_fop_actors[GF_FOP_MAXVALUE] = {
@@ -6416,6 +6549,7 @@ rpc_clnt_procedure_t clnt4_0_fop_actors[GF_FOP_MAXVALUE] = {
     [GF_FOP_ICREATE] = {"ICREATE", client4_0_icreate},
     [GF_FOP_NAMELINK] = {"NAMELINK", client4_0_namelink},
     [GF_FOP_COPY_FILE_RANGE] = {"COPY-FILE-RANGE", client4_0_copy_file_range},
+    [GF_FOP_TEST] = {"TEST", client4_0_test},
 };
 
 rpc_clnt_prog_t clnt4_0_fop_prog = {

@@ -6232,6 +6232,110 @@ out:
     return ret;
 }
 
+int
+server4_test_cbk(call_frame_t *frame, void *cookie, xlator_t *this,
+                 int32_t op_ret, int32_t op_errno, fd_t *fd, dict_t *xdata)
+{
+    server_state_t *state = NULL;
+    rpcsvc_request_t *req = NULL;
+    gfx_open_rsp rsp = {
+        0,
+    };
+
+    dict_to_xdr(xdata, &rsp.xdata);
+#if 0
+
+    if (op_ret < 0) {
+        state = CALL_STATE(frame);
+        gf_msg(this->name, fop_log_level(GF_FOP_OPEN, op_errno), op_errno,
+               PS_MSG_OPEN_INFO,
+               "%" PRId64 ": OPEN %s (%s), client: %s, error-xlator: %s",
+               frame->root->unique, state->loc.path,
+               uuid_utoa(state->resolve.gfid), STACK_CLIENT_NAME(frame->root),
+               STACK_ERR_XL_NAME(frame->root));
+        goto out;
+    }
+
+    op_ret = server4_post_open(frame, this, &rsp, fd);
+    if (op_ret)
+        goto out;
+#endif
+out:
+    rsp.op_ret = 1234;
+    rsp.op_errno = gf_errno_to_error(op_errno);
+
+    req = frame->local;
+    server_submit_reply(frame, req, &rsp, NULL, 0, NULL,
+                        (xdrproc_t)xdr_gfx_test_rsp);
+    GF_FREE(rsp.xdata.pairs.pairs_val);
+
+    return 0;
+}
+
+int
+server4_test_resume(call_frame_t *frame, xlator_t *bound_xl)
+{
+    server_state_t *state = NULL;
+
+    state = CALL_STATE(frame);
+
+    if (state->resolve.op_ret != 0)
+        goto err;
+
+#if 0
+    state->fd = fd_create(state->loc.inode, frame->root->pid);
+    state->fd->flags = state->flags;
+
+    STACK_WIND(frame, server4_open_cbk, bound_xl, bound_xl->fops->open,
+               &state->loc, state->flags, state->fd, state->xdata);
+
+    return 0;
+#endif
+err:
+    server4_test_cbk(frame, NULL, frame->this, state->resolve.op_ret,
+                     state->resolve.op_errno, NULL, NULL);
+    return 0;
+}
+
+int
+server4_0_test(rpcsvc_request_t *req)
+{
+    server_state_t *state = NULL;
+    call_frame_t *frame = NULL;
+    gfx_open_req args = {
+        {
+            0,
+        },
+    };
+    int ret = -1;
+    int op_errno = 0;
+
+    if (!req)
+        return ret;
+
+    ret = rpc_receive_common(req, &frame, &state, NULL, &args, xdr_gfx_test_req,
+                             GF_FOP_TEST);
+    if (ret != 0) {
+        goto out;
+    }
+
+    state->resolve.type = RESOLVE_MUST;
+    memcpy(state->resolve.gfid, args.gfid, 16);
+
+    state->flags = gf_flags_to_flags(args.flags);
+
+    xdr_to_dict(&args.xdata, &state->xdata);
+
+    ret = 0;
+    resolve_and_resume(frame, server4_test_resume);
+out:
+    if (op_errno)
+        SERVER_REQ_SET_ERROR(req, ret);
+
+    return ret;
+}
+
+
 rpcsvc_actor_t glusterfs4_0_fop_actors[] = {
     [GFS3_OP_NULL] = {"NULL", GFS3_OP_NULL, server_null, NULL, 0},
     [GFS3_OP_STAT] = {"STAT", GFS3_OP_STAT, server4_0_stat, NULL, 0},
@@ -6325,6 +6429,7 @@ rpcsvc_actor_t glusterfs4_0_fop_actors[] = {
                           NULL, 0, DRC_NA},
     [GFS3_OP_COPY_FILE_RANGE] = {"COPY-FILE-RANGE", GFS3_OP_COPY_FILE_RANGE,
                                  server4_0_copy_file_range, NULL, 0, DRC_NA},
+    [GFS3_OP_TEST] = {"TEST", GFS3_OP_TEST, server4_0_test, NULL, 0},
 };
 
 struct rpcsvc_program glusterfs4_0_fop_prog = {

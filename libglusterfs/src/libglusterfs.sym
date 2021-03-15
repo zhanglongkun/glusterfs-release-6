@@ -262,12 +262,16 @@ default_mknod_resume
 default_notify
 default_open
 default_open_cbk
+default_test
+default_test_cbk
 default_opendir
 default_opendir_cbk
 default_opendir_failure_cbk
 default_opendir_resume
 default_open_failure_cbk
+default_test_failure_cbk
 default_open_resume
+default_test_resume
 default_rchecksum
 default_rchecksum_cbk
 default_rchecksum_failure_cbk
